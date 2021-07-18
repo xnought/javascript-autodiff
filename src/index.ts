@@ -1,30 +1,40 @@
 class Value {
 	data: number;
+	grad: number;
+	_backward: () => void;
 	constructor(data: number) {
 		this.data = data;
+		this.grad = 0;
+		this._backward = () => {};
 	}
 	add(other: Value): Value {
-		const output = this.data + other.data;
-		return new Value(output);
-	}
-	subtract(other: Value): Value {
-		const output = this.data - other.data;
-		return new Value(output);
+		const out = new Value(this.data + other.data);
+		const _backward = () => {
+			this.grad += out.grad;
+			other.grad += out.grad;
+		};
+		out._backward = _backward;
+		return out;
 	}
 	multiply(other: Value): Value {
-		const output = this.data * other.data;
-		return new Value(output);
-	}
-	divide(other: Value): Value {
-		const output = this.data / other.data;
-		return new Value(output);
+		const out = new Value(this.data * other.data);
+		const _backward = () => {
+			this.grad += other.grad * out.grad;
+			other.grad += this.grad * out.grad;
+		};
+		out._backward = _backward;
+		return out;
 	}
 	relu(): Value {
-		const output = this.data > 0 ? this.data : 0;
-		return new Value(output);
+		const out = new Value(this.data > 0 ? this.data : 0);
+		const _backward = () => {
+			this.grad += (out.data > 0 ? 1 : 0) * out.grad;
+		};
+		out._backward = _backward;
+		return out;
 	}
 	print(): void {
-		console.log(`Value=${this.data}`);
+		console.log(`Value=${this.data}, grad=${this.grad}`);
 	}
 }
 
@@ -32,14 +42,8 @@ const main = (): void => {
 	const a = new Value(10);
 	const zero = new Value(0);
 	const b = a.add(a);
-	b.multiply(a)
-		.add(b)
-		.relu()
-		.multiply(zero)
-		.relu()
-		.subtract(a)
-		.divide(a)
-		.print();
+	const c = b.multiply(a).add(b).multiply(zero);
+	c.print();
 };
 
 main();
