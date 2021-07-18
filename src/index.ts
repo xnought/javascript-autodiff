@@ -56,7 +56,7 @@ class Value {
 		});
 	}
 	print(): void {
-		console.log(`Value=${this.data}, grad=${this.grad}`);
+		console.log(`Value(data=${this.data}, grad=${this.grad})`);
 	}
 }
 
