@@ -1,14 +1,17 @@
 class Value {
 	data: number;
 	grad: number;
-	_backward: () => void;
-	constructor(data: number) {
+	private _backward: () => void;
+	private _prev: Set<Value>;
+	constructor(data: number, children?: Value[]) {
 		this.data = data;
 		this.grad = 0;
 		this._backward = () => {};
+		this._prev = new Set(children);
 	}
 	add(other: Value): Value {
-		const out = new Value(this.data + other.data);
+		const out = new Value(this.data + other.data, [this, other]);
+		console.log(out._prev);
 		const _backward = () => {
 			this.grad += out.grad;
 			other.grad += out.grad;
@@ -17,7 +20,7 @@ class Value {
 		return out;
 	}
 	multiply(other: Value): Value {
-		const out = new Value(this.data * other.data);
+		const out = new Value(this.data * other.data, [this, other]);
 		const _backward = () => {
 			this.grad += other.grad * out.grad;
 			other.grad += this.grad * out.grad;
@@ -26,7 +29,7 @@ class Value {
 		return out;
 	}
 	relu(): Value {
-		const out = new Value(this.data > 0 ? this.data : 0);
+		const out = new Value(this.data > 0 ? this.data : 0, [this]);
 		const _backward = () => {
 			this.grad += (out.data > 0 ? 1 : 0) * out.grad;
 		};
