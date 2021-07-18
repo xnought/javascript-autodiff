@@ -11,7 +11,6 @@ class Value {
 	}
 	add(other: Value): Value {
 		const out = new Value(this.data + other.data, [this, other]);
-		console.log(out._prev);
 		const _backward = () => {
 			this.grad += out.grad;
 			other.grad += out.grad;
@@ -22,8 +21,8 @@ class Value {
 	multiply(other: Value): Value {
 		const out = new Value(this.data * other.data, [this, other]);
 		const _backward = () => {
-			this.grad += other.grad * out.grad;
-			other.grad += this.grad * out.grad;
+			this.grad += other.data * out.grad;
+			other.grad += this.data * out.grad;
 		};
 		out._backward = _backward;
 		return out;
@@ -36,17 +35,58 @@ class Value {
 		out._backward = _backward;
 		return out;
 	}
+	backward(): void {
+		let topo: Value[] = [],
+			visited = new Set();
+
+		const buildTopo = (v: Value) => {
+			if (!visited.has(v)) {
+				visited.add(v);
+				v._prev.forEach((child) => {
+					buildTopo(child);
+				});
+				topo.push(v);
+			}
+		};
+		buildTopo(this);
+
+		this.grad = 1;
+		topo.reverse().forEach((v) => {
+			v._backward();
+		});
+	}
 	print(): void {
 		console.log(`Value=${this.data}, grad=${this.grad}`);
 	}
 }
 
 const main = (): void => {
-	const a = new Value(10);
-	const zero = new Value(0);
-	const b = a.add(a);
-	const c = b.multiply(a).add(b).multiply(zero);
-	c.print();
+	/* Micrograd example
+		a = Value(2)
+		b = Value(1)
+		m = Value(3)
+		c = (a+b) * m
+		c.backward()
+		print(a)
+		print(b)
+		print(m)
+
+		OUTPUT >>>
+		Value(data=2, grad=3)
+		Value(data=1, grad=3)
+		Value(data=3, grad=3)
+	 */
+	const a = new Value(2);
+	const b = new Value(1);
+	const m = new Value(3);
+
+	let c = a.add(b);
+	c = c.multiply(m);
+
+	c.backward();
+	a.print();
+	b.print();
+	m.print();
 };
 
 main();
