@@ -1,67 +1,37 @@
-class Value {
-	data: number;
-	grad: number;
-	private _backward: () => void;
-	private _prev: Set<Value>;
-	constructor(data: number, children?: Value[]) {
-		this.data = data;
-		this.grad = 0;
-		this._backward = () => {};
-		this._prev = new Set(children);
-	}
-	add(other: Value): Value {
-		const out = new Value(this.data + other.data, [this, other]);
-		const _backward = () => {
-			this.grad += out.grad;
-			other.grad += out.grad;
-		};
-		out._backward = _backward;
-		return out;
-	}
-	multiply(other: Value): Value {
-		const out = new Value(this.data * other.data, [this, other]);
-		const _backward = () => {
-			this.grad += other.data * out.grad;
-			other.grad += this.data * out.grad;
-		};
-		out._backward = _backward;
-		return out;
-	}
-	relu(): Value {
-		const out = new Value(this.data > 0 ? this.data : 0, [this]);
-		const _backward = () => {
-			this.grad += (out.data > 0 ? 1 : 0) * out.grad;
-		};
-		out._backward = _backward;
-		return out;
-	}
-	backward(): void {
-		let topo: Value[] = [],
-			visited = new Set();
+import Value from "./autodiff/Value";
 
-		const buildTopo = (v: Value) => {
-			if (!visited.has(v)) {
-				visited.add(v);
-				v._prev.forEach((child) => {
-					buildTopo(child);
-				});
-				topo.push(v);
-			}
-		};
-		buildTopo(this);
-
-		this.grad = 1;
-		topo.reverse().forEach((v) => {
-			v._backward();
-		});
-	}
-	print(): void {
-		console.log(`Value(data=${this.data}, grad=${this.grad})`);
-	}
+function timer(func: () => void, label: string = "Timer") {
+	console.time(label);
+	func();
+	console.timeEnd(label);
 }
 
-const main = (): void => {
-	/* Micrograd example
+function performanceComparison() {
+	const num1 = 10,
+		num2 = 4;
+	timer(() => {
+		const a = new Value(num1);
+		const b = new Value(num2);
+		const c = a.add(b);
+		c.backward();
+	}, "With Backward");
+	timer(() => {
+		const a = new Value(num1);
+		const b = new Value(num2);
+		const c = a.add(b);
+	}, "Without Backward");
+}
+
+function test(): boolean {
+	const a = new Value(2);
+	const b = new Value(1);
+	const m = new Value(3);
+
+	let c = a.add(b);
+	c = c.multiply(m);
+	c.backward();
+
+	/* Micrograd example from python
 		a = Value(2)
 		b = Value(1)
 		m = Value(3)
@@ -76,17 +46,17 @@ const main = (): void => {
 		Value(data=1, grad=3)
 		Value(data=3, grad=3)
 	 */
-	const a = new Value(2);
-	const b = new Value(1);
-	const m = new Value(3);
+	if (a.data !== 2 || b.data !== 1 || m.data !== 3 || c.data !== 9)
+		return false; // check data
+	if (a.grad !== 3 || b.grad !== 3 || m.grad !== 3 || c.grad !== 1)
+		return false; // check grads
 
-	let c = a.add(b);
-	c = c.multiply(m);
+	console.log("Tests Passed");
+	return true;
+}
 
-	c.backward();
-	a.print();
-	b.print();
-	m.print();
-};
+function main() {
+	test() && performanceComparison();
+}
 
 main();
