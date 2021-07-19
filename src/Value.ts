@@ -18,6 +18,15 @@ export default class Value {
 		out._backward = _backward;
 		return out;
 	}
+	subtract(other: Value): Value {
+		const out = new Value(this.data - other.data, [this, other]);
+		const _backward = () => {
+			this.grad += out.grad;
+			other.grad += out.grad;
+		};
+		out._backward = _backward;
+		return out;
+	}
 	multiply(other: Value): Value {
 		const out = new Value(this.data * other.data, [this, other]);
 		const _backward = () => {
@@ -55,6 +64,9 @@ export default class Value {
 			const v = topo[i];
 			v._backward();
 		}
+	}
+	copy() {
+		return new Value(this.data);
 	}
 	print(): void {
 		console.log(`Value(data=${this.data}, grad=${this.grad})`);

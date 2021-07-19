@@ -35,7 +35,16 @@ class LinearRegression {
 }
 class MSE {
 	forward(outputs: Value[][], labels: Value[][]): Value {
-		return new Value(0);
+		const m = outputs.length;
+		let sum = new Value(0);
+		for (let i = 0; i < m; i++) {
+			const output = outputs[i][0],
+				label = labels[i][0];
+			const subtract = label.subtract(output);
+			const squared = subtract.multiply(subtract.copy());
+			sum.add(squared);
+		}
+		return sum.multiply(new Value(1 / m));
 	}
 }
 abstract class Optimizer {
@@ -73,12 +82,14 @@ function main() {
 	const y = rangeLinear(n);
 	const xTrain = toValues(X);
 	const yTrain = toValues(y);
-	console.log("X:", X, "y:", y);
+	// console.log("X:", X, "y:", y);
 
 	const loss = new MSE();
 	const model = new LinearRegression();
-	console.log(model.parameters());
-	console.log(model.forward(xTrain));
+	const learningRate = 0.001;
+	const optim = new SGD(model.parameters(), learningRate);
+	// console.log(model.parameters());
+	// console.log(model.forward(xTrain));
 }
 
 main();
