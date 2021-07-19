@@ -60,32 +60,3 @@ export default class Value {
 		console.log(`Value(data=${this.data}, grad=${this.grad})`);
 	}
 }
-
-const main = (): void => {
-	/* Micrograd example
-		a = Value(2)
-		b = Value(1)
-		m = Value(3)
-		c = (a+b) * m
-		c.backward()
-		print(a)
-		print(b)
-		print(m)
-
-		OUTPUT >>>
-		Value(data=2, grad=3)
-		Value(data=1, grad=3)
-		Value(data=3, grad=3)
-	 */
-	const a = new Value(2);
-	const b = new Value(1);
-	const m = new Value(3);
-
-	let c = a.add(b);
-	c = c.multiply(m);
-
-	c.backward();
-	a.print();
-	b.print();
-	m.print();
-};
