@@ -60,18 +60,79 @@ function mainTest() {
 	test() && performanceComparison();
 }
 
-class Neuron {
-	constructor() {}
-}
-class Layer {
-	constructor() {}
-}
+const randNormal = () =>
+	(Math.sqrt(-2 * Math.log(Math.random())) *
+		Math.cos(2 * Math.PI * Math.random())) /
+	5;
 class Module {
-	constructor() {}
+	zeroGrad() {
+		const p = this.parameters();
+		for (let i = 0; i < p.length; i++) {
+			p[i].grad = 0;
+		}
+	}
+	parameters(): Value[] {
+		return [];
+	}
+}
+class Neuron extends Module {
+	weights: Value[];
+	bias: Value;
+	constructor(numInputs: number) {
+		super();
+		this.weights = new Array(numInputs);
+		for (let i = 0; i < numInputs; i++) {
+			this.weights[i] = new Value(randNormal());
+		}
+		this.bias = new Value(0);
+	}
+	forward(inputs: Value[]) {
+		const { weights, bias } = this;
+		let output = new Value(0);
+		for (let i = 0; i < weights.length; i++) {
+			const weight = weights[i],
+				input = inputs[i];
+			output = output.add(input.multiply(weight));
+		}
+		return output.add(bias);
+	}
+	parameters() {
+		return [...this.weights, this.bias];
+	}
+	print() {
+		console.log(`Neuron(${this.weights.length})`);
+	}
+}
+class Layer extends Module {
+	neurons: Neuron[];
+	constructor(numInputs: number, numNeurons: number) {
+		super();
+		this.neurons = new Array(numNeurons);
+		for (let i = 0; i < numNeurons; i++) {
+			this.neurons[i] = new Neuron(numInputs);
+		}
+	}
+	forward(inputs: Value[]) {
+		return this.neurons.map((neuron) => neuron.forward(inputs));
+	}
+	parameters() {
+		const { neurons } = this;
+		let parameters: Value[] = [];
+		for (let i = 0; i < neurons.length; i++) {
+			const neuronParams = neurons[i].parameters();
+			parameters = [...parameters, ...neuronParams];
+		}
+		return parameters;
+	}
 }
 function main() {
 	// Here I will develop the Neuron, Layer and Module
 	// for something similar to pytorch, probably most like tinygrad due to base
+	const input = [new Value(1)];
+	const l1 = new Layer(1, 2);
+	const output = l1.forward(input);
+	console.log(l1.neurons);
+	console.log(output);
 }
 
 main();
