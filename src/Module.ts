@@ -3,16 +3,8 @@ const randNormal = () =>
 	(Math.sqrt(-2 * Math.log(Math.random())) *
 		Math.cos(2 * Math.PI * Math.random())) /
 	5;
-export class Module {
-	zeroGrad() {
-		const p = this.parameters();
-		for (let i = 0; i < p.length; i++) {
-			p[i].grad = 0;
-		}
-	}
-	parameters(): Value[] {
-		return [];
-	}
+abstract class Module {
+	abstract parameters(): Value[];
 }
 export class Neuron extends Module {
 	weights: Value[];
@@ -22,6 +14,7 @@ export class Neuron extends Module {
 		this.weights = new Array(numInputs);
 		for (let i = 0; i < numInputs; i++) {
 			this.weights[i] = new Value(randNormal());
+			// this.weights[i] = new Value(randNormal());
 		}
 		this.bias = new Value(0);
 	}

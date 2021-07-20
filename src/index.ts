@@ -1,54 +1,37 @@
 import Value from "./Value";
-import Layer, { Module } from "./Module";
+import Layer from "./Module";
 
 class Linear {
-	private layer: Layer;
+	readonly layer: Layer;
 	constructor(numInputs: number, numNeurons: number) {
 		this.layer = new Layer(numInputs, numNeurons);
 	}
 	forward(X: Value[][]) {
-		const outputs = X.map((inputs) => this.layer.forward(inputs));
+		const outputs = X.map((inputs) => {
+			return this.layer.forward(inputs);
+		});
 		return outputs;
-	}
-	zeroGrad() {
-		this.layer.zeroGrad();
 	}
 	parameters() {
 		return this.layer.parameters();
 	}
 }
-class LinearRegression {
-	l1: Linear;
-	constructor() {
-		this.l1 = new Linear(1, 1);
-	}
-	forward(X: any) {
-		X = this.l1.forward(X);
-		return X;
-	}
-	zeroGrad() {
-		this.l1.zeroGrad();
-	}
-	parameters() {
-		return this.l1.parameters();
-	}
-}
 class MSE {
-	forward(outputs: Value[][], labels: Value[][]): Value {
+	forward(outputs: Value[][], labels: Value[][]) {
 		const m = outputs.length;
-		let sum = new Value(0);
+		let totalLoss = new Value(0);
 		for (let i = 0; i < m; i++) {
 			const output = outputs[i][0],
 				label = labels[i][0];
-			const subtract = label.subtract(output);
-			const squared = subtract.multiply(subtract.copy());
-			sum = sum.add(squared);
+			const diff = output.subtract(label);
+			totalLoss = totalLoss.add(diff.multiply(diff.copy()));
 		}
-		return sum.multiply(new Value(1 / m));
+		totalLoss = totalLoss.multiply(new Value(1 / m));
+		return totalLoss;
 	}
 }
 abstract class Optimizer {
-	parameters: Value[];
+	readonly parameters: Value[];
 	constructor(parameters: Value[]) {
 		this.parameters = parameters;
 	}
@@ -62,9 +45,12 @@ class SGD extends Optimizer {
 	}
 	step() {
 		const { learningRate, parameters } = this;
-		for (const value of parameters) {
-			value.data = value.data - learningRate * value.grad;
-		}
+		parameters.forEach((p) => {
+			p.data -= learningRate * p.grad;
+		});
+	}
+	zeroGrad() {
+		this.parameters.forEach((p) => (p.grad = 0));
 	}
 }
 
@@ -81,34 +67,33 @@ function print(data: Value[][]) {
 	}
 	console.log(a);
 }
+const rangeLinear = (length: number) =>
+	new Array(length).fill(0).map((_, i) => i);
+
 function main() {
 	const n = 15;
-	const rangeLinear = (length: number) =>
-		new Array(length).fill(0).map((_, i) => i);
-	const X = rangeLinear(n);
-	const y = rangeLinear(n);
-	const xTrain = toValues(X);
-	const yTrain = toValues(y);
-	// console.log("X:", X, "y:", y);
+	const xTrain = toValues(rangeLinear(n));
+	const yTrain = toValues(rangeLinear(n));
 
+	const epochs = 100;
+	const lr = 0.02;
+	const l1 = new Linear(1, 1);
 	const loss = new MSE();
-	const model = new LinearRegression();
-	const learningRate = 0.01;
-	const optim = new SGD(model.parameters(), learningRate);
-	const epochs = 1;
+	const optim = new SGD(l1.parameters(), lr);
 
-	for (let i = 0; i < epochs; i++) {
+	for (let epoch = 0; epoch < epochs; epoch++) {
 		// forward
-		const outputs = model.forward(xTrain);
-		const totalLoss = loss.forward(outputs, yTrain);
+		const outputs = l1.forward(xTrain);
+		let totalLoss = loss.forward(outputs, yTrain);
 
-		model.zeroGrad(); // before backward clear the prior grad
-		//backward
+		//backward then grad descent
+		optim.zeroGrad();
 		totalLoss.backward();
 		optim.step();
-		console.log(totalLoss.data);
+
+		console.log(`Epoch=${epoch + 1} \t Loss=${totalLoss.data}`);
 	}
-	print(model.forward(xTrain));
+	print(l1.forward(xTrain));
 }
 
 main();
