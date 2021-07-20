@@ -42,7 +42,7 @@ class MSE {
 				label = labels[i][0];
 			const subtract = label.subtract(output);
 			const squared = subtract.multiply(subtract.copy());
-			sum.add(squared);
+			sum = sum.add(squared);
 		}
 		return sum.multiply(new Value(1 / m));
 	}
@@ -63,7 +63,7 @@ class SGD extends Optimizer {
 	step() {
 		const { learningRate, parameters } = this;
 		for (const value of parameters) {
-			value.data -= learningRate * value.grad;
+			value.data = value.data - learningRate * value.grad;
 		}
 	}
 }
@@ -73,6 +73,13 @@ function toValues(arr: number[]) {
 }
 function toNumbers(arr: Value[]) {
 	return arr.map((value) => value.data);
+}
+function print(data: Value[][]) {
+	let a = [];
+	for (const value of data) {
+		a.push(value[0].data);
+	}
+	console.log(a);
 }
 function main() {
 	const n = 15;
@@ -86,10 +93,22 @@ function main() {
 
 	const loss = new MSE();
 	const model = new LinearRegression();
-	const learningRate = 0.001;
+	const learningRate = 0.01;
 	const optim = new SGD(model.parameters(), learningRate);
-	// console.log(model.parameters());
-	// console.log(model.forward(xTrain));
+	const epochs = 1;
+
+	for (let i = 0; i < epochs; i++) {
+		// forward
+		const outputs = model.forward(xTrain);
+		const totalLoss = loss.forward(outputs, yTrain);
+
+		model.zeroGrad(); // before backward clear the prior grad
+		//backward
+		totalLoss.backward();
+		optim.step();
+		console.log(totalLoss.data);
+	}
+	print(model.forward(xTrain));
 }
 
 main();
