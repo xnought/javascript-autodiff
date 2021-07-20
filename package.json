@@ -1,19 +1,18 @@
 {
-  "name": "ts-template",
+  "name": "js-grad",
   "version": "1.0.0",
-  "description": "",
-  "main": "",
+  "description": "This is a javascript implementation of autodiff translated from micrograd by Adrej Karpathy. Then built upon this to build a torch like neural network composition",
+  "main": "build/",
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build":"node build/index.js",
-    "prebuild": "tsc"
+    "dev": "nodemon index.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xnought/ts-template.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Donny Bertucci",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/xnought/ts-template/issues"

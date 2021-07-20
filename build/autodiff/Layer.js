@@ -59,4 +59,4 @@ class Layer extends Module {
     }
 }
 exports.default = Layer;
-//# sourceMappingURL=Module.js.map
+//# sourceMappingURL=Layer.js.map
