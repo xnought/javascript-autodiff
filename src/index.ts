@@ -1,9 +1,14 @@
 import Value from "./Value";
 import Layer from "./Module";
 
-class Linear {
+abstract class FeedForward {
+	abstract forward(X: Value[][]): Value[][];
+	abstract parameters(): Value[];
+}
+class Linear extends FeedForward {
 	readonly layer: Layer;
 	constructor(numInputs: number, numNeurons: number) {
+		super();
 		this.layer = new Layer(numInputs, numNeurons);
 	}
 	forward(X: Value[][]) {
@@ -74,17 +79,38 @@ abstract class Module {
 	abstract forward(X: Value[][]): Value[][];
 	abstract parameters(): Value[];
 }
-class LinReg extends Module {
-	l1: Linear;
-	constructor() {
+
+class Sequential extends FeedForward {
+	layers: FeedForward[];
+	constructor(...layers: FeedForward[]) {
 		super();
-		this.l1 = new Linear(1, 1);
+		this.layers = layers;
 	}
 	forward(X: Value[][]) {
-		return this.l1.forward(X);
+		this.layers.forEach((layer) => {
+			X = layer.forward(X);
+		});
+		return X;
 	}
 	parameters() {
-		return this.l1.parameters();
+		let params: Value[] = [];
+		this.layers.forEach((layer) => {
+			params = [...params, ...layer.parameters()];
+		});
+		return params;
+	}
+}
+class LinReg extends FeedForward {
+	oneNeuron: FeedForward;
+	constructor() {
+		super();
+		this.oneNeuron = new Sequential(new Linear(1, 1));
+	}
+	forward(X: Value[][]) {
+		return this.oneNeuron.forward(X);
+	}
+	parameters() {
+		return this.oneNeuron.parameters();
 	}
 }
 
@@ -100,18 +126,23 @@ function main() {
 	const optim = new SGD(model.parameters(), lr);
 
 	for (let epoch = 0; epoch < epochs; epoch++) {
-		// forward
+		// forward pass
 		const outputs = model.forward(xTrain);
 		let totalLoss = loss.forward(outputs, yTrain);
 
-		//backward then grad descent
+		// backprop then optimize
 		optim.zeroGrad();
 		totalLoss.backward();
-		optim.step();
+		optim.step(); // grad descent
 
 		console.log(`Epoch=${epoch + 1} \t Loss=${totalLoss.data}`);
 	}
 	print(model.forward(xTrain));
 }
+function test() {
+	let a = new Sequential(new Linear(1, 2));
+}
+
+// test();
 
 main();
