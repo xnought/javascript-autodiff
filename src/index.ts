@@ -70,6 +70,24 @@ function print(data: Value[][]) {
 const rangeLinear = (length: number) =>
 	new Array(length).fill(0).map((_, i) => i);
 
+abstract class Module {
+	abstract forward(X: Value[][]): Value[][];
+	abstract parameters(): Value[];
+}
+class LinReg extends Module {
+	l1: Linear;
+	constructor() {
+		super();
+		this.l1 = new Linear(1, 1);
+	}
+	forward(X: Value[][]) {
+		return this.l1.forward(X);
+	}
+	parameters() {
+		return this.l1.parameters();
+	}
+}
+
 function main() {
 	const n = 15;
 	const xTrain = toValues(rangeLinear(n));
@@ -77,13 +95,13 @@ function main() {
 
 	const epochs = 100;
 	const lr = 0.02;
-	const l1 = new Linear(1, 1);
+	const model = new LinReg();
 	const loss = new MSE();
-	const optim = new SGD(l1.parameters(), lr);
+	const optim = new SGD(model.parameters(), lr);
 
 	for (let epoch = 0; epoch < epochs; epoch++) {
 		// forward
-		const outputs = l1.forward(xTrain);
+		const outputs = model.forward(xTrain);
 		let totalLoss = loss.forward(outputs, yTrain);
 
 		//backward then grad descent
@@ -93,7 +111,7 @@ function main() {
 
 		console.log(`Epoch=${epoch + 1} \t Loss=${totalLoss.data}`);
 	}
-	print(l1.forward(xTrain));
+	print(model.forward(xTrain));
 }
 
 main();
