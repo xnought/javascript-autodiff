@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xnought/ts-template.git"
+    "url": "git+https://github.com/xnought/js-grad.git"
   },
   "keywords": [],
   "author": "Donny Bertucci",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/xnought/ts-template/issues"
+    "url": "https://github.com/xnought/js-grad/issues"
   },
-  "homepage": "https://github.com/xnought/ts-template#readme",
+  "homepage": "https://github.com/xnought/js-grad/#readme",
   "devDependencies": {
     "nodemon": "^2.0.7",
     "ts-node": "^10.0.0",
