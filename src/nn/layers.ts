@@ -2,9 +2,17 @@ import { Value, Layer } from "../autodiff";
 
 export abstract class FeedForward {
 	abstract forward(X: Value[][]): Value[][];
-	abstract parameters(): Value[];
+	parameters(): Value[] {
+		let params: Value[] = [];
+		for (const [key, value] of Object.entries(this)) {
+			if (value instanceof Layer || value instanceof FeedForward) {
+				params.push(...value.parameters());
+			}
+		}
+		return params;
+	}
 }
-abstract class Activation {
+export abstract class Activation {
 	abstract forward(X: Value[][]): Value[][];
 }
 
@@ -19,9 +27,6 @@ export class Linear extends FeedForward {
 			return this.layer.forward(inputs);
 		});
 		return outputs;
-	}
-	parameters() {
-		return this.layer.parameters();
 	}
 }
 
