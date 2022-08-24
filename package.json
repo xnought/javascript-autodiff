@@ -1,6 +1,6 @@
 {
   "name": "js-grad",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This is a javascript implementation of autodiff translated from micrograd by Adrej Karpathy. Then built upon this to build a torch like neural network composition",
   "main": "build/",
   "scripts": {
