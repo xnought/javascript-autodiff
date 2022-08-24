@@ -1,12 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReLU = exports.Sequential = exports.Linear = exports.FeedForward = void 0;
+exports.ReLU = exports.Sequential = exports.Linear = exports.Activation = exports.FeedForward = void 0;
 const autodiff_1 = require("../autodiff");
 class FeedForward {
+    parameters() {
+        let params = [];
+        for (const [key, value] of Object.entries(this)) {
+            if (value instanceof autodiff_1.Layer || value instanceof FeedForward) {
+                params.push(...value.parameters());
+            }
+        }
+        return params;
+    }
 }
 exports.FeedForward = FeedForward;
 class Activation {
 }
+exports.Activation = Activation;
 class Linear extends FeedForward {
     constructor(numInputs, numNeurons) {
         super();
@@ -17,9 +27,6 @@ class Linear extends FeedForward {
             return this.layer.forward(inputs);
         });
         return outputs;
-    }
-    parameters() {
-        return this.layer.parameters();
     }
 }
 exports.Linear = Linear;
