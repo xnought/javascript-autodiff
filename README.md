@@ -7,11 +7,11 @@ First install from npm
 npm install js-grad
 ```
 Then import from package in javascript
-```javscript
+```javascript
 import { autodiff, nn } from "js-grad";
 ```
 or 
-```javscript
+```javascript
 const { autodiff, nn } = require("js-grad");
 ```
 in node.
