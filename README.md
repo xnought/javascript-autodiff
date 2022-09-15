@@ -29,9 +29,6 @@ class LinearRegression extends nn.layers.FeedForward {
   forward(X) {
     return this.model.forward(X);
   }
-  parameters() {
-    return this.model.parameters();
-  }
 }
 function createLinearVector(length) {
   return {
@@ -94,9 +91,6 @@ class NeuralNetwork extends FeedForward {
   }
   forward(X) {
     return this.model.forward(X);
-  }
-  parameters() {
-    return this.model.parameters();
   }
 }
 
